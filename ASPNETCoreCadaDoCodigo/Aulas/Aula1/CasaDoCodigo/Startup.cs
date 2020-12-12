@@ -5,9 +5,11 @@ using System.Threading.Tasks;
 using CasaDoCodigo.Repositories;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace CasaDoCodigo
 {
@@ -24,17 +26,25 @@ namespace CasaDoCodigo
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
+            services.AddDistributedMemoryCache();
+            services.AddSession();
+            services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
             string connectionString = Configuration.GetConnectionString("Default");
-            
+
             services.AddDbContext<ApplicationContext>(options => options.UseSqlServer(connectionString));
-            services.AddTransient<IDataService,DataService>();
+            services.AddTransient<IDataService, DataService>();
             services.AddTransient<IProdutoRepository, ProdutoRepository>();
+            services.AddTransient<IPedidoRepository, PedidoRepository>();
+            services.AddTransient<ICadastroRepository, CadastroRepository>();
+            services.AddTransient<IItemPedidoRepository, ItemPedidoRepository>();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, IServiceProvider serviceProvider)
         {
+               
             if (env.IsDevelopment())
             {
                 app.UseBrowserLink();
@@ -46,16 +56,22 @@ namespace CasaDoCodigo
             }
 
             app.UseStaticFiles();
+            app.UseSession();
 
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
                     name: "default",
-                    template: "{controller=Pedido}/{action=Carrossel}/{id?}");
+                    template: "{controller=Pedido}/{action=Carrossel}/{codigo?}");
             });
 
             serviceProvider.GetService<IDataService>().InicializaDB();
 
         }
     }
+
 }
+
+   
+
+   
