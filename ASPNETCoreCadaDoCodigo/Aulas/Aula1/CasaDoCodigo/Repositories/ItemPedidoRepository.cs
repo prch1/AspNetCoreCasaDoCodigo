@@ -30,7 +30,7 @@ namespace CasaDoCodigo.Repositories
 
         public void RemoveItemPedido(int itemPedido)
         {
-            throw new NotImplementedException();
+            dbSet.Remove(GetItemPedido(itemPedido));
         }
     }
 }
